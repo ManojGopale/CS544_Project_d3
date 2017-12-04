@@ -1,0 +1,26 @@
+table {
+	border: 1px solid black;
+	border-collapse: collapse;
+	border-spacing: 5px;
+}
+
+th, td {
+	border: 1px solid black;
+	border-collapse: collapse;
+	padding: 15px;
+	text-align: center;
+}
+
+circle {
+	fill-opacity: 0.7;
+}
+
+circle.hidden {
+	fill: #ccc;
+}
+
+.extent {
+	fill: #000;
+	fill-opacity: 0.125;
+	stroke: #fff;
+}

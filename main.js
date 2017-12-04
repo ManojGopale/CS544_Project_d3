@@ -156,6 +156,38 @@ d3.csv("LinerSvm_30.csv", function (error, data) {
 		}
 	}
 
+	// Create table in body, header and tableBody
+	var table = d3.select('body').append('table').attr("id", "newTable");
+	var thead = table.append("thead");
+	var tbody = table.append("tbody");
+	
+	// Array for header , contains the keys that are to be used for the data
+	header = Object.keys(data[0]);
+	
+	// Creating the header for the table
+	thead.append("tr").selectAll("th")
+			.data(header)
+			.enter()
+			.append("th")
+			.text(function(d) {
+					return d;
+				});
+	
+	var rows = tbody.selectAll('tr')
+									.data(data)
+									.enter()
+									.append('tr');
+	
+	var cells = rows.selectAll('td')
+		.data(function (row) {
+			return header.map(function(column) {
+				return {column: column, value: row[column]};
+			});
+		})
+		.enter()
+		.append('td')
+		.text(function(d) { return d.value;} );
+
 
 	// data is actually the data to be used inside the loop now
 	//d3.select("#svgPlot")
