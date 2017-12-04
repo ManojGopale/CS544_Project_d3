@@ -58,6 +58,20 @@ function getLevel (val) {
 	}
 }
 
+// getLine takes in input as the data of rectangles and gets x,y,width and height for the boxes and returns a 
+// path to plot the center line
+
+function getLine(boxData) {
+	console.log("boxData= " + boxData);
+	var box_x = boxData.x.baseVal.value;
+	var box_y = boxData.y.baseVal.value;
+	var box_width = boxData.width.baseVal.value;
+	var box_height = boxData.height.baseVal.value;
+	console.log("x= " + box_x + ", y= " + box_y + ", width= " + box_width + ", height= " + box_height);
+	return ("M " + (box_x+(box_width/2)) + " " + box_y + " L " + (box_x+(box_width/2)) + " " + (box_y+box_height) );
+}
+
+
 d3.selection.prototype.callReturn = function (callable) {
 	return callable(this);
 };
@@ -77,13 +91,14 @@ d3.selectAll("#svgPlot")
 	.enter()
 	.append("g")
 	.append("rect")
+	.attr("class", "rectBox")
 	.attr("x", function(d) {
 			return d*width;
 		})
 	.attr("y", 0)
 	.attr("width", width)
 	.attr("height", height)
-	.attr("fill", "black");
+	.attr("fill", "white");
 
 // ------------------------
 // Create sumList that will have the values required to make rectangles 
@@ -100,6 +115,22 @@ var sumList = {}
 //	C0[str].fpCount = 0;
 //	C0[str].fnCount = 0;
 //}
+
+// ------------------------
+// Create a line in the center of each box
+var box = d3.selectAll(".rectBox")._groups[0];
+console.log("box= " + box.length);
+
+d3.selectAll("#svgPlot")
+	.selectAll("empty")
+	.data(box)
+	.enter()
+	.append("g")
+	.append("path")
+	.attr("d", getLine)
+	.attr("stroke", "red")
+	.attr("stroke_width", 3);
+
 
 // ------------------------
 
@@ -156,6 +187,8 @@ d3.csv("LinerSvm_30.csv", function (error, data) {
 		}
 	}
 
+	// ----------------------------------------
+
 	// Create table in body, header and tableBody
 	var table = d3.select('body').append('table').attr("id", "newTable");
 	var thead = table.append("thead");
@@ -176,7 +209,8 @@ d3.csv("LinerSvm_30.csv", function (error, data) {
 	var rows = tbody.selectAll('tr')
 									.data(data)
 									.enter()
-									.append('tr');
+									.append('tr')
+									.attr("id", "tableRow");
 	
 	var cells = rows.selectAll('td')
 		.data(function (row) {
@@ -187,6 +221,11 @@ d3.csv("LinerSvm_30.csv", function (error, data) {
 		.enter()
 		.append('td')
 		.text(function(d) { return d.value;} );
+
+	// ----------------------------------------
+
+	d3.selectAll("#tableRow")
+		.on("mousedown", mouseClick);
 
 
 	// data is actually the data to be used inside the loop now
@@ -203,3 +242,23 @@ d3.csv("LinerSvm_30.csv", function (error, data) {
 	//		return d.C0;
 	//	})
 })
+
+// -------------------------------------
+function mouseClick (d,i) {
+	console.log("data = " + d.C6);
+	d3.select("#svgPlot")
+		.data(d)
+		.append("g")
+		.attr("class", "newLine")
+		.append("path")
+		.attr("d", createLine)
+		.attr("stroke", "blue")
+		.attr("stroke_width", 3);
+}
+
+// createLine creates lines on the svg where element is selected fromt the table
+function createLine(d) {
+	// height is the svg height which is globbaly defined at the top
+	var yScale = d3.scaleLinear().domain([0,1]).range([height, 0]);
+	console.log("-- ## -- C0 = " + yScale(d.C0));
+}
