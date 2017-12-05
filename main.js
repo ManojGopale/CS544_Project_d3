@@ -245,20 +245,53 @@ d3.csv("LinerSvm_30.csv", function (error, data) {
 
 // -------------------------------------
 function mouseClick (d,i) {
-	console.log("data = " + d.C6);
+	console.log("mouseCLick data = " + d.C0);
 	d3.select("#svgPlot")
-		.data(d)
+		.selectAll("empty")
+		// Always input list to the data
+		.data([d])
+		.enter()
+		//.exit()
 		.append("g")
 		.attr("class", "newLine")
 		.append("path")
 		.attr("d", createLine)
+		.attr("fill", "none")
 		.attr("stroke", "blue")
 		.attr("stroke_width", 3);
 }
 
 // createLine creates lines on the svg where element is selected fromt the table
 function createLine(d) {
+	console.log("d in createLine = " + d);
 	// height is the svg height which is globbaly defined at the top
 	var yScale = d3.scaleLinear().domain([0,1]).range([height, 0]);
 	console.log("-- ## -- C0 = " + yScale(d.C0));
+	var y0 = yScale(d.C0);
+	var y1 = yScale(d.C1);
+	var y2 = yScale(d.C2);
+	var y3 = yScale(d.C3);
+	var y4 = yScale(d.C4);
+	var y5 = yScale(d.C5);
+	var y6 = yScale(d.C6);
+	var y7 = yScale(d.C7);
+	var y8 = yScale(d.C8);
+	var y9 = yScale(d.C9);
+	console.log("x1= " + x1 + ", x5= " + x5 + ", x9= " + x9);
+	var x0 = 0*width + width/2;
+	var x1 = 1*width + width/2;
+	var x2 = 2*width + width/2;
+	var x3 = 3*width + width/2;
+	var x4 = 4*width + width/2;
+	var x5 = 5*width + width/2;
+	var x6 = 6*width + width/2;
+	var x7 = 7*width + width/2;
+	var x8 = 8*width + width/2;
+	var x9 = 9*width + width/2;
+
+	return ("M " + x0 + " " + y0 + " L " + x1 + " " + y1 + " L " + x2 + " " + y2
+					+ " L " + x3 + " " + y4 + " L " + x5 + " " + y5 + " L " + x6 + " " + y6
+					+ " L " + x7 + " " + y7 + " L " + x8 + " " + y8 + " L " + x9 + " " + y9
+					+ " L " + x9 + " " + height + " L " + x0 + " " + height +" Z"
+					);
 }
