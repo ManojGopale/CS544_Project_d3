@@ -35,25 +35,25 @@ function getPredClass (data) {
 
 // getLevel returns the level according to the predictedScore
 function getLevel (val) {
-	if (val < 0.1) {
+	if (val <= 0.1) {
 		return "level0";
-	} else if (val >= 0.1 && val < 0.2 ) {
+	} else if (val > 0.1 && val <= 0.2 ) {
 		return "level1";
-	} else if (val>= 0.2 && val < 0.3) {
+	} else if (val> 0.2 && val <= 0.3) {
 		return "level2";
-	} else if (val>= 0.3 && val < 0.4) {
+	} else if (val> 0.3 && val <= 0.4) {
 		return "level3";
-	} else if (val>= 0.4 && val < 0.5) {
+	} else if (val> 0.4 && val <= 0.5) {
 		return "level4";
-	} else if (val>= 0.5 && val < 0.6) {
+	} else if (val> 0.5 && val <= 0.6) {
 		return "level5";
-	} else if (val>= 0.6 && val < 0.7) {
+	} else if (val> 0.6 && val <= 0.7) {
 		return "level6";
-	} else if (val>= 0.7 && val < 0.8) {
+	} else if (val> 0.7 && val <= 0.8) {
 		return "level7";
-	} else if (val>= 0.8 && val < 0.9) {
+	} else if (val> 0.8 && val <= 0.9) {
 		return "level8";
-	} else if (val>= 0.9 && val < 1) {
+	} else if (val> 0.9 && val <= 1) {
 		return "level9";
 	}
 }
@@ -128,7 +128,7 @@ d3.selectAll("#svgPlot")
 	.append("g")
 	.append("path")
 	.attr("d", getLine)
-	.attr("stroke", "red")
+	.attr("stroke", "black")
 	.attr("stroke_width", 3);
 
 
@@ -137,7 +137,8 @@ d3.selectAll("#svgPlot")
 // Creating rectangles
 // Remove all the spaces after comma in the csv file, otherwise it will not work
 //d3.csv("trial.csv", function (error, data) {
-d3.csv("LinerSvm_30.csv", function (error, data) {
+//d3.csv("LinerSvm_30.csv", function (error, data) {
+d3.csv("t_100.csv", function (error, data) {
 	if (error) throw error;
 	console.log(data);
 	// Parses the csv and creates data as csvParse.
@@ -159,6 +160,10 @@ d3.csv("LinerSvm_30.csv", function (error, data) {
 			sumList[classStr][levelStr].tpCount = 0;
 			sumList[classStr][levelStr].fpCount = 0;
 			sumList[classStr][levelStr].fnCount = 0;
+			// Create a list of data elements that are in the class levels
+			sumList[classStr][levelStr].tpList = [];
+			sumList[classStr][levelStr].fpList = [];
+			sumList[classStr][levelStr].fnList = [];
 		}
 		console.log("^^^ Created " + classStr  + ", sumList= " + sumList[classStr][levelStr].tpCount);
 	}
@@ -177,10 +182,12 @@ d3.csv("LinerSvm_30.csv", function (error, data) {
 				if(data[j].Assigned_Class === data[j].True_Class) {
 					//TruePositive
 					sumList[classStr][levelStr].tpCount = sumList[classStr][levelStr].tpCount + 1;
+					sumList[classStr][levelStr].tpList.push(data[j]);
 					console.log("class= " + i + ", assignedClass= " + data[j].Assigned_Class + ", TrueClass= " + data[j].True_Class + ", tpCount = " + sumList[classStr][levelStr].tpCount + ", fpCount= " + sumList[classStr][levelStr].fpCount + ", SCore= " + data[j].Predicted_Score + ", Level= " + levelStr);
 				} else {
 					//False Positive
 					sumList[classStr][levelStr].fpCount = sumList[classStr][levelStr].fpCount + 1;
+					sumList[classStr][levelStr].fpList.push(data[j]);
 					console.log("class= " + i + ", assignedClass= " + data[j].Assigned_Class + ", TrueClass= " + data[j].True_Class + ", tpCount = " + sumList[classStr][levelStr].tpCount + ", fpCount= " + sumList[classStr][levelStr].fpCount + ", SCore= " + data[j].Predicted_Score + ", Level= " + levelStr);
 				}
 			}
@@ -225,8 +232,24 @@ d3.csv("LinerSvm_30.csv", function (error, data) {
 	// ----------------------------------------
 
 	d3.selectAll("#tableRow")
-		.on("mousedown", mouseClick);
+		.on("mouseover", mouseClick)
+		.on("mouseout", mouseOut);
+		//.on("mousedown", mouseClick);
 
+	//createChart 
+	//createChart(6, 9, 3, 1, maxCount);
+
+	var maxCount = getMaxCount(sumList);
+
+	for (var i=0; i<10; i++) {
+		// i loops over all classes
+		for (var j=0; j<10; j++) {
+			//j loops over levels in each class
+			var classStr = "C"+i;
+			var levelStr = "level"+j;
+			createChart(i, j, sumList[classStr][levelStr].tpCount, sumList[classStr][levelStr].fpCount, maxCount);
+		}
+	}
 
 	// data is actually the data to be used inside the loop now
 	//d3.select("#svgPlot")
@@ -253,8 +276,8 @@ function mouseClick (d,i) {
 		.enter()
 		//.exit()
 		.append("g")
-		.attr("class", "newLine")
 		.append("path")
+		.attr("class", "newLine")
 		.attr("d", createLine)
 		.attr("fill", "none")
 		.attr("stroke", "blue")
@@ -277,7 +300,7 @@ function createLine(d) {
 	var y7 = yScale(d.C7);
 	var y8 = yScale(d.C8);
 	var y9 = yScale(d.C9);
-	console.log("x1= " + x1 + ", x5= " + x5 + ", x9= " + x9);
+	console.log("y1= " + y1 + ", y5= " + y5 + ", y9= " + y9);
 	var x0 = 0*width + width/2;
 	var x1 = 1*width + width/2;
 	var x2 = 2*width + width/2;
@@ -294,4 +317,67 @@ function createLine(d) {
 					+ " L " + x7 + " " + y7 + " L " + x8 + " " + y8 + " L " + x9 + " " + y9
 					+ " L " + x9 + " " + height + " L " + x0 + " " + height +" Z"
 					);
+}
+
+function mouseOut() {
+	d3.selectAll(".newLine")
+		.attr("stroke", "grey")
+}
+
+// createChart creates the histogram on the svg
+function createChart(histClass, histLevel, tpCount, fpCount, maxCount) {
+	console.log("CLass= " + histClass + ", level= " + histLevel + ", tpCount= " + tpCount + ", fpCount= " + fpCount);
+	var x0 = histClass*width + (width/2);
+	var yScale = d3.scaleLinear().domain([9, 0]).range([0, 180]);
+
+	var y0 = yScale(histLevel);
+	//var maxCount = tpCount + fpCount;
+
+	var xScale = d3.scaleLinear().domain([0, maxCount]).range([0, width/2]);
+	var fpWidth = xScale(fpCount);
+	var tpWidth = xScale(tpCount);
+	console.log("--&& -- Class = " + histClass + ", level= " + histLevel + ", x0= " + x0 + ", y0= " + y0 + ", fpwidth= " + fpWidth + ", tpWidth= " + tpWidth + ", halfWidth= " + width/2 ); 
+
+	var classId = histClass + "_" + histLevel;
+	// Hist for fp 
+	d3.select("#svgPlot").append("g")
+		.append("rect")
+		.attr("class", classId)
+		.attr("x", x0)
+		.attr("y", y0)
+		.attr("height", "20")
+		.attr("width", fpWidth)
+		.attr("fill", "red");
+		//.on("mousedown", chartCLick);
+
+	// Hist for tp
+	d3.select("#svgPlot").append("g")
+		.append("rect")
+		.attr("class", classId)
+		.attr("x", x0+fpWidth)
+		.attr("y", y0)
+		.attr("height", "20")
+		.attr("width", tpWidth)
+		.attr("fill", "green");
+		//.on("mousedown", chartClick);
+}
+
+function getMaxCount (sumList) {
+	var countList= [];
+	for (var i=0; i<10; i++) {
+		//i loops over all class
+		for (var j=0; j<10; j++) {
+			var tp_count = 0;
+			var fp_count = 0;
+			var sum_count = 0;
+			//j loops over all levels
+			var classStr = "C"+i;
+			var levelStr = "level"+j;
+			var tp_count = sumList[classStr][levelStr].tpCount;
+			var fp_count = sumList[classStr][levelStr].fpCount;
+			var sum_count = tp_count + sum_count;
+			countList.push(sum_count);
+		}
+	}
+	return d3.max(countList);
 }
