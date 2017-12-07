@@ -372,7 +372,9 @@ d3.csv("s_100.csv", function (error, data) {
 
 // -------------------------------------
 function mouseClick (d,i) {
-	console.log("mouseCLick data = " + d.C0);
+	console.log("mouseCLick data = " + this.className);
+	d3.select(this).classed("highlight", true);
+
 	d3.select("#svgPlot")
 		.selectAll("empty")
 		// Always input list to the data
@@ -424,8 +426,12 @@ function createLine(d) {
 }
 
 function mouseOut() {
+	// removes all the lines in the plot
 	d3.selectAll(".newLine").remove();
 	d3.selectAll(".wierdLines").remove();
+
+	// removes the previously highlighted row in the table
+	d3.selectAll(".highlight").classed("highlight", false);
 		//.attr("stroke", "grey")
 }
 
@@ -580,8 +586,35 @@ var xAxis = d3.axisBottom()
 	.ticks(10);
 
 d3.select("#svgPlot").append("g")
-	.attr("class", "axis")
+	.attr("class", "xaxis")
 	.attr("transform", "translate ( 0 , " + (svgHeight - 30) + " )" )
 	.call(xAxis);
 
+var txtPadding = 10;
+var yDown = 16;
+d3.select("#svgPlot")
+	.selectAll("empty")
+	.data(num)
+	.enter()
+	.append("text")
+	.attr("x", function(d) {
+		return (d*width+width/2-txtPadding);
+	})
+	.attr("y", function() {
+		return (svgHeight - 30 + yDown);
+	})
+	//.attr("x", "56")
+	//.attr("y", "220")
+	.text("C")
+	.attr("font-size", "10");
 
+
+var yScaleAxis = d3.scaleLinear().domain([0,1]).range([height, 0]);
+var yAxis = d3.axisLeft()
+	.scale(yScaleAxis)
+	.ticks(10);
+
+d3.select("#svgPlot").append("g")
+	.attr("class", "yaxis")
+	.attr("transform", "translate ( " + (width/4) + " 0 )" )
+	.call(yAxis);
