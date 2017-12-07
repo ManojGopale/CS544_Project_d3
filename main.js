@@ -9,10 +9,13 @@
 var height = 200;
 var width = 120;
 
+// Controls the factor to which the width of histograms can go maximum to
+var widthFactor = 0.8;
+
 function createSvg(sel) {
 	sel.append("svg")
 		.attr("width", 10*width)
-		.attr("height", height)
+		.attr("height", height+50)
 		.attr("id", "svgPlot")
 };
 
@@ -299,7 +302,7 @@ d3.csv("s_100.csv", function (error, data) {
 		})
 		.attr("height", "20")
 		.attr("width", function(d) {
-			var xScale = d3.scaleLinear().domain([0, maxCount]).range([0, width/2]);
+			var xScale = d3.scaleLinear().domain([0, maxCount]).range([0, widthFactor*width]);
 			return xScale(d.fpCount);
 		})
 		.attr("fill", "red")
@@ -314,7 +317,7 @@ d3.csv("s_100.csv", function (error, data) {
 		.append("rect")
 		.attr("x", function (d) {
 			var xClass = parseInt(d.class.slice(-1));
-			var xScale = d3.scaleLinear().domain([0, maxCount]).range([0, width/2]);
+			var xScale = d3.scaleLinear().domain([0, maxCount]).range([0, widthFactor*width]);
 			var xShift = xScale(d.fpCount);
 			console.log("##----### d.class= " + d.class + ", level= " + d.level + ", tpCount= " + d.tpCount + ", x0= " + (xClass*width + (width/2)) );
 			return (xClass*width + (width/2) + xShift);
@@ -327,7 +330,7 @@ d3.csv("s_100.csv", function (error, data) {
 		})
 		.attr("height", "20")
 		.attr("width", function(d) {
-			var xScale = d3.scaleLinear().domain([0, maxCount]).range([0, width/2]);
+			var xScale = d3.scaleLinear().domain([0, maxCount]).range([0, widthFactor*width]);
 			return xScale(d.tpCount);
 		})
 		.attr("fill", "green")
