@@ -303,7 +303,8 @@ d3.csv("s_100.csv", function (error, data) {
 			return xScale(d.fpCount);
 		})
 		.attr("fill", "red")
-		.on("mousedown", chartClickRed);
+		.on("mouseover", chartClickRed);
+		//.on("mouseout", chartClickOut);
 
 	// Crate tp rectangels
 	d3.select("#svgPlot")
@@ -330,7 +331,8 @@ d3.csv("s_100.csv", function (error, data) {
 			return xScale(d.tpCount);
 		})
 		.attr("fill", "green")
-		.on("mousedown", chartClickGreen);
+		.on("mouseover", chartClickGreen);
+		//.on("mouseout", chartClickOut);
 	console.log("THIS IS OUR ARRAY:", lst);
 
 	// create a button on the rectangle and then use it to highlight rows 
@@ -418,8 +420,8 @@ function createLine(d) {
 }
 
 function mouseOut() {
-	d3.selectAll(".newLine")
-		.attr("stroke", "grey")
+	d3.selectAll(".newLine").remove();
+		//.attr("stroke", "grey")
 }
 
 // createChart creates the histogram on the svg
@@ -506,10 +508,15 @@ function chartClickRed (d){
   console.log("d=" + d.class);
 	console.log("this= " + this);
 	console.log("d in chartClick= " + d3.mouse(this) );
+
+	d3.selectAll(".wierdLines").remove();
+	d3.selectAll(".highlight").classed("highlight", false);
+
 	var rowClass = ".row_C" + d.class.slice(-1);
 	var rowLevel = d.level.slice(-1);
 	var row_id = rowClass + "_" + rowLevel + "_0";
 	d3.selectAll(row_id).classed("highlight", "true");
+	d3.selectAll(".highlight").moveToBack();
 
 	// Create fp lines
 	d3.select("#svgPlot")
@@ -517,6 +524,7 @@ function chartClickRed (d){
 		.data(d.fpList)
 		.enter()
 		.append("path")
+		.attr("class", "wierdLines")
 		.attr("d", createLine)
 		.attr("stroke", "black")
 		.attr("fill", "none")
@@ -527,10 +535,14 @@ function chartClickGreen (d){
   //console.log("d=" + d.class);
 	//console.log("this= " + this);
 	//console.log("d in chartClick= " + d3.mouse(this) );
+
+	d3.selectAll(".wierdLines").remove();
+	d3.selectAll(".highlight").classed("highlight", false);
+
 	var rowClass = ".row_C" + d.class.slice(-1);
 	var rowLevel = d.level.slice(-1);
 	var row_id = rowClass + "_" + rowLevel + "_1";
-	d3.selectAll(row_id).classed("highlight", "true");
+	d3.selectAll(row_id).classed("highlight", true);
 	d3.selectAll(".highlight").moveToBack();
 
 	// Create tp lines
@@ -539,11 +551,17 @@ function chartClickGreen (d){
 		.data(d.tpList)
 		.enter()
 		.append("path")
+		.attr("class", "wierdLines")
 		.attr("d", createLine)
 		.attr("stroke", "black")
 		.attr("fill", "none")
 		.attr("stroke_width", "5");
 }
+
+//function chartClickOut (d) {
+//	//d3.selectAll(".wierdLines").remove();
+//	//d3.selectAll(".highlight").classed("highlight", false);
+//}
 
 function className(d, i) {
 	console.log("d= " + d);
