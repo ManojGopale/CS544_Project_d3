@@ -11,6 +11,10 @@ th, td {
 	text-align: center;
 }
 
+tr.highlight {
+	background-color: #ffff99;
+}
+
 circle {
 	fill-opacity: 0.7;
 }

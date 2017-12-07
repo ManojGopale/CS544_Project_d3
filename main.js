@@ -138,7 +138,7 @@ d3.selectAll("#svgPlot")
 // Remove all the spaces after comma in the csv file, otherwise it will not work
 //d3.csv("trial.csv", function (error, data) {
 //d3.csv("LinerSvm_30.csv", function (error, data) {
-d3.csv("t_100.csv", function (error, data) {
+d3.csv("s_100.csv", function (error, data) {
 	if (error) throw error;
 	console.log(data);
 	// Parses the csv and creates data as csvParse.
@@ -186,6 +186,7 @@ d3.csv("t_100.csv", function (error, data) {
 					console.log("class= " + i + ", assignedClass= " + data[j].Assigned_Class + ", TrueClass= " + data[j].True_Class + ", tpCount = " + sumList[classStr][levelStr].tpCount + ", fpCount= " + sumList[classStr][levelStr].fpCount + ", SCore= " + data[j].Predicted_Score + ", Level= " + levelStr);
 				} else {
 					//False Positive
+					sumList[classStr][levelStr].correct = data[j].Correct;
 					sumList[classStr][levelStr].fpCount = sumList[classStr][levelStr].fpCount + 1;
 					sumList[classStr][levelStr].fpList.push(data[j]);
 					console.log("class= " + i + ", assignedClass= " + data[j].Assigned_Class + ", TrueClass= " + data[j].True_Class + ", tpCount = " + sumList[classStr][levelStr].tpCount + ", fpCount= " + sumList[classStr][levelStr].fpCount + ", SCore= " + data[j].Predicted_Score + ", Level= " + levelStr);
@@ -217,6 +218,7 @@ d3.csv("t_100.csv", function (error, data) {
 									.data(data)
 									.enter()
 									.append('tr')
+									.attr("class", rowClass)
 									.attr("id", "tableRow");
 	
 	var cells = rows.selectAll('td')
@@ -236,20 +238,108 @@ d3.csv("t_100.csv", function (error, data) {
 		.on("mouseout", mouseOut);
 		//.on("mousedown", mouseClick);
 
+	// ASsigning class to rows for linking C9_7_1 => Class9, level7, true positive
+	// C9_7_0 => Class9, level7, false positive
+	//d3.selectAll(".tableRow")._groups[0][0].childNodes[2].innerHTML ==> Gives the value of 1st row's 3rd columns value
+
+	//var rowSel = d3.selectAll(".tableRow");
+	//var rowDataNodes = d3.selectAll(".tableRow")._groups[0];
+	//for (var rowNum=0; rowNum < rowDataNodes.length ; rowNum++) {
+	//	var row_predScore = rowDataNodes[rowNum].childNodes[3].innerHTML;
+	//	var row_classLevel = getLevel(row_predScore).splice(-1);
+	//	var row_class = rowDataNodes[rowNum].childNodes[1].innerHTML;
+	//	var row_correct = rowDataNodes[rowNum].childNodes[2].innerHTML;
+
+	//	var row_id = "C" + row_class + "_" + row_classLevel + "_" + row_correct;
+
+	//}
+
 	//createChart 
-	//createChart(6, 9, 3, 1, maxCount);
+	//createChart(6, 9, 3, 1, maxCount, data);
 
 	var maxCount = getMaxCount(sumList);
-
+  var lst = [];
 	for (var i=0; i<10; i++) {
 		// i loops over all classes
 		for (var j=0; j<10; j++) {
 			//j loops over levels in each class
 			var classStr = "C"+i;
 			var levelStr = "level"+j;
-			createChart(i, j, sumList[classStr][levelStr].tpCount, sumList[classStr][levelStr].fpCount, maxCount);
+      sumList[classStr][levelStr]['class'] = classStr;
+			sumList[classStr][levelStr].level = levelStr;
+			console.log("$$$ sumList= " + sumList[classStr][levelStr]);
+      lst.push(sumList[classStr][levelStr]);
+			//createChart(i, j, sumList[classStr][levelStr].tpCount, sumList[classStr][levelStr].fpCount, maxCount, data);
 		}
 	}
+	// Create the fp rectangles
+	d3.select("#svgPlot")
+		.selectAll("empty")
+	  .data(lst)
+		.enter()
+		.append("rect")
+		.attr("x", function (d) {
+			var xClass = parseInt(d.class.slice(-1));
+			console.log("##----### d.class= " + d.class + ", level= " + d.level + ", tpCount= " + d.tpCount + ", x0= " + (xClass*width + (width/2)) );
+			return (xClass*width + (width/2));
+		})
+		.attr("y", function(d) {
+			var yScale = d3.scaleLinear().domain([9,0]).range([0, 180]);
+			var yLevel = parseInt(d.level.slice(-1) );
+			console.log("y0= " + yScale(yLevel))
+			return yScale(yLevel);
+		})
+		.attr("height", "20")
+		.attr("width", function(d) {
+			var xScale = d3.scaleLinear().domain([0, maxCount]).range([0, width/2]);
+			return xScale(d.fpCount);
+		})
+		.attr("fill", "red")
+		.on("mousedown", chartClickRed);
+
+	// Crate tp rectangels
+	d3.select("#svgPlot")
+		.selectAll("empty")
+	  .data(lst)
+		.enter()
+		.append("rect")
+		.attr("x", function (d) {
+			var xClass = parseInt(d.class.slice(-1));
+			var xScale = d3.scaleLinear().domain([0, maxCount]).range([0, width/2]);
+			var xShift = xScale(d.fpCount);
+			console.log("##----### d.class= " + d.class + ", level= " + d.level + ", tpCount= " + d.tpCount + ", x0= " + (xClass*width + (width/2)) );
+			return (xClass*width + (width/2) + xShift);
+		})
+		.attr("y", function(d) {
+			var yScale = d3.scaleLinear().domain([9,0]).range([0, 180]);
+			var yLevel = parseInt(d.level.slice(-1) );
+			console.log("y0= " + yScale(yLevel))
+			return yScale(yLevel);
+		})
+		.attr("height", "20")
+		.attr("width", function(d) {
+			var xScale = d3.scaleLinear().domain([0, maxCount]).range([0, width/2]);
+			return xScale(d.tpCount);
+		})
+		.attr("fill", "green")
+		.on("mousedown", chartClickGreen);
+	console.log("THIS IS OUR ARRAY:", lst);
+
+	// create a button on the rectangle and then use it to highlight rows 
+	// Use sumList in the data(sumList) and create the rectangles, that was we can get back the dataelements of the rectangeles
+	// for highlighting
+	//console.log("--***### data type =" + data[0] );
+	//d3.selectAll("#svgPlot")
+	//	.selectAll("empty")
+	//	.data([sumList])
+	//	.enter()
+	//	.append("rect")
+	//	.attr("g")
+	//	.attr("class", className);
+
+	//d3.selectAll("rect")
+	//	.on("mousedown", chartClick); 
+
 
 	// data is actually the data to be used inside the loop now
 	//d3.select("#svgPlot")
@@ -325,7 +415,7 @@ function mouseOut() {
 }
 
 // createChart creates the histogram on the svg
-function createChart(histClass, histLevel, tpCount, fpCount, maxCount) {
+function createChart(histClass, histLevel, tpCount, fpCount, maxCount, data) {
 	console.log("CLass= " + histClass + ", level= " + histLevel + ", tpCount= " + tpCount + ", fpCount= " + fpCount);
 	var x0 = histClass*width + (width/2);
 	var yScale = d3.scaleLinear().domain([9, 0]).range([0, 180]);
@@ -338,11 +428,17 @@ function createChart(histClass, histLevel, tpCount, fpCount, maxCount) {
 	var tpWidth = xScale(tpCount);
 	console.log("--&& -- Class = " + histClass + ", level= " + histLevel + ", x0= " + x0 + ", y0= " + y0 + ", fpwidth= " + fpWidth + ", tpWidth= " + tpWidth + ", halfWidth= " + width/2 ); 
 
-	var classId = histClass + "_" + histLevel;
-	// Hist for fp 
+	// classId_correct is when the rectangle is marked correct.
+	// Same class but with extra append of row_C0_7_1 is given to the rows.
+	// Useful in highlighting the rows of the table.
+	var classId_correct = "C"+ histClass + "_" + histLevel + "_1";
+	var classId_wrong = "C"+ histClass + "_" + histLevel + "_0";
+	// Hist for fp
+	console.log("THIS IS OUR DATA:", data);
 	d3.select("#svgPlot").append("g")
+	  .datum(data)
 		.append("rect")
-		.attr("class", classId)
+		.attr("class", classId_wrong)
 		.attr("x", x0)
 		.attr("y", y0)
 		.attr("height", "20")
@@ -353,15 +449,16 @@ function createChart(histClass, histLevel, tpCount, fpCount, maxCount) {
 	// Hist for tp
 	d3.select("#svgPlot").append("g")
 		.append("rect")
-		.attr("class", classId)
+		.attr("class", classId_correct)
 		.attr("x", x0+fpWidth)
 		.attr("y", y0)
 		.attr("height", "20")
 		.attr("width", tpWidth)
-		.attr("fill", "green");
-		//.on("mousedown", chartClick);
+		.attr("fill", "green")
+		//.on("mousedown", chartClick(data));
 }
 
+// Gets the max (fpCount+tpCount) for a particular level in a class amongst all the data points.
 function getMaxCount (sumList) {
 	var countList= [];
 	for (var i=0; i<10; i++) {
@@ -380,4 +477,43 @@ function getMaxCount (sumList) {
 		}
 	}
 	return d3.max(countList);
+}
+
+// Returns the rowID for a row based on the class, level and if its correctly mapped or incorrectly mapped
+// row_C7_3_1 => class7, level3 mapped correctly in data
+// row_C7_3_0 => class7, level3 mapped incorrectly, miscalssified, false positive
+function rowClass(d) {
+	console.log("**** row class data = " + d.C0);
+	var row_class = "C"+ d.Assigned_Class;
+	var row_classLevel = getLevel(d.Predicted_Score).slice(-1);
+	var row_correct = d.Correct;
+	
+	var row_id = "row_" + row_class + "_" + row_classLevel + "_" + row_correct;
+	console.log ("row_class= " + row_class + ", row_ClassLevel= " + row_classLevel + ", row_correct= " + row_correct + ", row_id= " + row_id);
+	return row_id;
+}
+
+// chartCLick, will highlight all the rows of the selected histogram
+function chartClickRed (d){
+  console.log("d=" + d.class);
+	console.log("this= " + this);
+	console.log("d in chartClick= " + d3.mouse(this) );
+	var rowClass = ".row_C" + d.class.slice(-1);
+	var rowLevel = d.level.slice(-1);
+	var row_id = rowClass + "_" + rowLevel + "_0";
+	d3.selectAll(row_id).classed("highlight", "true");
+}
+
+function chartClickGreen (d){
+  //console.log("d=" + d.class);
+	//console.log("this= " + this);
+	//console.log("d in chartClick= " + d3.mouse(this) );
+	var rowClass = ".row_C" + d.class.slice(-1);
+	var rowLevel = d.level.slice(-1);
+	var row_id = rowClass + "_" + rowLevel + "_1";
+	d3.selectAll(row_id).classed("highlight", "true");
+}
+
+function className(d, i) {
+	console.log("d= " + d);
 }
