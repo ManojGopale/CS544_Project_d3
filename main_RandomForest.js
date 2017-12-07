@@ -151,7 +151,7 @@ d3.selectAll("#svgPlot")
 // Remove all the spaces after comma in the csv file, otherwise it will not work
 //d3.csv("trial.csv", function (error, data) {
 //d3.csv("LinerSvm_30.csv", function (error, data) {
-d3.csv("s_5000.csv", function (error, data) {
+d3.csv("r_5000.csv", function (error, data) {
 	if (error) throw error;
 	console.log(data);
 	// Parses the csv and creates data as csvParse.
