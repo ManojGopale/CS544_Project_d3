@@ -71,6 +71,14 @@ function getLine(boxData) {
 	return ("M " + (box_x+(box_width/2)) + " " + box_y + " L " + (box_x+(box_width/2)) + " " + (box_y+box_height) );
 }
 
+d3.selection.prototype.moveToBack = function() {  
+	return this.each(function() { 
+		var firstChild = this.parentNode.firstChild; 
+		if (firstChild) { 
+			this.parentNode.insertBefore(this, firstChild); 
+		} 
+	});
+};
 
 d3.selection.prototype.callReturn = function (callable) {
 	return callable(this);
@@ -379,7 +387,7 @@ function createLine(d) {
 	console.log("d in createLine = " + d);
 	// height is the svg height which is globbaly defined at the top
 	var yScale = d3.scaleLinear().domain([0,1]).range([height, 0]);
-	console.log("-- ## -- C0 = " + yScale(d.C0));
+	console.log("-- ## -- C3 = " + d.C3 + ", scale= "  + yScale(d.C3));
 	var y0 = yScale(d.C0);
 	var y1 = yScale(d.C1);
 	var y2 = yScale(d.C2);
@@ -403,8 +411,8 @@ function createLine(d) {
 	var x9 = 9*width + width/2;
 
 	return ("M " + x0 + " " + y0 + " L " + x1 + " " + y1 + " L " + x2 + " " + y2
-					+ " L " + x3 + " " + y4 + " L " + x5 + " " + y5 + " L " + x6 + " " + y6
-					+ " L " + x7 + " " + y7 + " L " + x8 + " " + y8 + " L " + x9 + " " + y9
+					+ " L " + x3 + " " + y3 + " L " + x4 + " " + y4 + " L " + x5 + " " + y5
+					+ " L " + x6 + " " + y6 + " L " + x7 + " " + y7 + " L " + x8 + " " + y8 + " L " + x9 + " " + y9
 					+ " L " + x9 + " " + height + " L " + x0 + " " + height +" Z"
 					);
 }
@@ -502,6 +510,17 @@ function chartClickRed (d){
 	var rowLevel = d.level.slice(-1);
 	var row_id = rowClass + "_" + rowLevel + "_0";
 	d3.selectAll(row_id).classed("highlight", "true");
+
+	// Create fp lines
+	d3.select("#svgPlot")
+		.selectAll("empty")
+		.data(d.fpList)
+		.enter()
+		.append("path")
+		.attr("d", createLine)
+		.attr("stroke", "black")
+		.attr("fill", "none")
+		.attr("stroke_width", "5");
 }
 
 function chartClickGreen (d){
@@ -512,6 +531,18 @@ function chartClickGreen (d){
 	var rowLevel = d.level.slice(-1);
 	var row_id = rowClass + "_" + rowLevel + "_1";
 	d3.selectAll(row_id).classed("highlight", "true");
+	d3.selectAll(".highlight").moveToBack();
+
+	// Create tp lines
+	d3.select("#svgPlot")
+		.selectAll("empty")
+		.data(d.tpList)
+		.enter()
+		.append("path")
+		.attr("d", createLine)
+		.attr("stroke", "black")
+		.attr("fill", "none")
+		.attr("stroke_width", "5");
 }
 
 function className(d, i) {

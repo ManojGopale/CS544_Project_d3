@@ -5,9 +5,11 @@ table {
 }
 
 th, td {
+	font-family: Tahoma;
+	font-size: 15px;
 	border: 1px solid black;
 	border-collapse: collapse;
-	padding: 15px;
+	padding: 5px;
 	text-align: center;
 }
 
