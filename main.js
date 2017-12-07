@@ -8,6 +8,7 @@
 // SVG dimensions
 var height = 200;
 var width = 120;
+var svgHeight = height+50;
 
 // Controls the factor to which the width of histograms can go maximum to
 var widthFactor = 0.8;
@@ -15,7 +16,7 @@ var widthFactor = 0.8;
 function createSvg(sel) {
 	sel.append("svg")
 		.attr("width", 10*width)
-		.attr("height", height+50)
+		.attr("height", svgHeight)
 		.attr("id", "svgPlot")
 };
 
@@ -424,6 +425,7 @@ function createLine(d) {
 
 function mouseOut() {
 	d3.selectAll(".newLine").remove();
+	d3.selectAll(".wierdLines").remove();
 		//.attr("stroke", "grey")
 }
 
@@ -569,3 +571,17 @@ function chartClickGreen (d){
 function className(d, i) {
 	console.log("d= " + d);
 }
+
+// Creating axis
+var xScaleAxis = d3.scaleLinear().domain([0,9]).range([width/2, (9*width+width/2) ]);
+//var xScaleAxis = d3.scaleQuantize().domain([width/2, (9*width+width/2)]).range(["C0", "C9"]);
+var xAxis = d3.axisBottom()
+	.scale(xScaleAxis)
+	.ticks(10);
+
+d3.select("#svgPlot").append("g")
+	.attr("class", "axis")
+	.attr("transform", "translate ( 0 , " + (svgHeight - 30) + " )" )
+	.call(xAxis);
+
+
